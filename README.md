@@ -8,3 +8,7 @@ Contributions to this repo are welcome.
    ```
    npm install
    ```
+4. Run it locally:
+   ```
+   npm run dev
+   ```
