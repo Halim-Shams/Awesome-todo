@@ -1,53 +1,59 @@
-import React, {useContext, useReducer, useState} from 'react';
-import {reducer} from '../reducer';
+import React, { useContext, useReducer, useState, useEffect } from "react";
+import { reducer } from "../reducer";
 
 const defaultState = {
-	activities: [],
-	validation: false,
-	darkTheme: false,
-	alertContent: '',
-	alertAction: '',
-	alert: false,
+  activities: [],
+  validation: false,
+  darkTheme: false,
+  alertContent: "",
+  alertAction: "",
+  alert: false,
 };
 
 const AppContext = React.createContext();
 
-const AppProvider = ({children}) => {
-	const [state, dispatch] = useReducer(reducer, defaultState);
+const AppProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, defaultState);
 
-	const [localTime, setLocalTime] = useState(
-		new Date().toLocaleString('en-US', {
-			hour: 'numeric',
-			minute: 'numeric',
-			hour12: true,
-		})
-	);
+  // THEME HUNDLER
+  const toggleTheme = () => {
+    const switchOn = new Audio("/switch-on.wav");
+    const switchOff = new Audio("/switch-off.wav");
 
-	// THEME HUNDLER
-	const toggleTheme = () => {
-		const switchOn = new Audio('/switch-on.wav');
-		const switchOff = new Audio('/switch-off.wav');
+    if (state.darkTheme) {
+      switchOff.play();
+    } else {
+      switchOn.play();
+    }
 
-		if (state.darkTheme) {
-			switchOff.play();
-		} else {
-			switchOn.play();
-		}
+    dispatch({ type: "TOGGLE_THEME" });
+    document.body.classList.toggle("dark");
+  };
 
-		dispatch({type: 'TOGGLE_THEME'});
-		document.body.classList.toggle('dark');
-	};
+  useEffect(() => {
+    if (state.alert) {
+      //   console.log("Setting up timeout for ALERT_OUT");
+      const timeout = setTimeout(() => {
+        // console.log("Dispatching ALERT_OUT");
+        dispatch({ type: "ALERT_OUT" });
+      }, 1000);
 
-	return (
-		<AppContext.Provider
-			value={{toggleTheme, state, dispatch, localTime, setLocalTime}}>
-			{children}
-		</AppContext.Provider>
-	);
+      return () => {
+        // console.log("Clearing timeout for ALERT_OUT");
+        clearTimeout(timeout);
+      };
+    }
+  }, [state.alert]);
+
+  return (
+    <AppContext.Provider value={{ toggleTheme, state, dispatch }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export const useGlobalContext = () => {
-	return useContext(AppContext);
+  return useContext(AppContext);
 };
 
-export {AppContext, AppProvider};
+export { AppContext, AppProvider };
